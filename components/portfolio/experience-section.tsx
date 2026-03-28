@@ -9,12 +9,16 @@ import { cn } from "@/lib/utils"
 export interface ExperienceSectionProps {
   /** Lets inner `position: sticky` work; parallax scale breaks sticky. Set from page. */
   parallaxFlat?: boolean
-  sectionIndex?: number
 }
+
+/** Left inset aligned with site `max-w-6xl` + `px-6`; track spans to viewport right for card peek. */
+const EXPERIENCE_RAIL_INSET =
+  "max(1.5rem, calc((100vw - min(100vw, 72rem)) / 2 + 1.5rem))" as const
 
 /** `parallaxFlat` is read by `ParallaxContainer` via props; not used inside. */
 export function ExperienceSection(_props: ExperienceSectionProps) {
   const sectionRef = useRef<HTMLElement>(null)
+  const viewportRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const [scrollDistance, setScrollDistance] = useState(0)
   const [translateX, setTranslateX] = useState(0)
@@ -33,14 +37,17 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
 
     const measure = () => {
       const track = trackRef.current
-      if (!track) return
-      const maxTx = Math.max(0, track.scrollWidth - window.innerWidth)
+      const viewport = viewportRef.current
+      if (!track || !viewport) return
+      const visibleW = viewport.clientWidth
+      const maxTx = Math.max(0, track.scrollWidth - visibleW)
       setScrollDistance(maxTx > 0 ? maxTx + 80 : 0)
     }
 
     measure()
     const ro = new ResizeObserver(measure)
     if (trackRef.current) ro.observe(trackRef.current)
+    if (viewportRef.current) ro.observe(viewportRef.current)
     window.addEventListener("resize", measure)
     void document.fonts.ready.then(measure)
     return () => {
@@ -60,12 +67,15 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
       const scrollable = section.offsetHeight - window.innerHeight
       if (scrollable <= 0) return
 
+      const viewport = viewportRef.current
+      const visibleW = viewport?.clientWidth ?? window.innerWidth
+
       const rect = section.getBoundingClientRect()
       // Top of tall block relative to viewport; advances 0 → negative as we scroll the pin range.
       const scrolled = Math.min(Math.max(-rect.top, 0), scrollable)
       const progress = scrollable > 0 ? scrolled / scrollable : 0
 
-      const maxTx = Math.max(0, track.scrollWidth - window.innerWidth)
+      const maxTx = Math.max(0, track.scrollWidth - visibleW)
       setTranslateX(-progress * maxTx)
     }
 
@@ -92,7 +102,7 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/3 pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background/80 to-transparent pointer-events-none" />
 
-        <div className="relative max-w-5xl mx-auto px-6">
+        <div className="relative mx-auto max-w-6xl px-6">
           <h2 className="text-sm uppercase tracking-widest text-primary mb-16 font-medium">
             Experience
           </h2>
@@ -116,18 +126,27 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/3 pointer-events-none" />
       <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background/80 to-transparent pointer-events-none z-10" />
 
-      <div className="sticky top-0 h-screen flex flex-col overflow-hidden">
-        <div className="relative z-10 pt-12 lg:pt-16 pb-6 px-6 max-w-5xl mx-auto w-full shrink-0">
-          <h2 className="text-sm uppercase tracking-widest text-primary font-medium">
-            Experience
-          </h2>
+      <div className="sticky top-0 flex h-screen min-h-0 flex-col">
+        <div className="relative z-10 mx-auto w-full max-w-6xl shrink-0 px-6 pt-12 lg:pt-16">
+          <div className="pb-6">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-primary">
+              Experience
+            </h2>
+          </div>
         </div>
 
-        <div className="relative flex-1 flex items-stretch min-h-0 min-w-0 overflow-x-visible">
+        <div
+          ref={viewportRef}
+          className="relative min-h-0 min-w-0 flex-1 overflow-visible pb-12 lg:pb-16"
+          style={{
+            marginLeft: EXPERIENCE_RAIL_INSET,
+            width: `calc(100vw - ${EXPERIENCE_RAIL_INSET})`,
+          }}
+        >
           <div
             ref={trackRef}
             className={cn(
-              "flex w-max flex-nowrap gap-4 md:gap-6 lg:gap-8 px-6 pb-12 lg:pb-16 items-stretch",
+              "flex h-full w-max flex-nowrap items-stretch gap-5 md:gap-7 lg:gap-8",
               scrollDistance <= 0 && "justify-center",
             )}
             style={{
@@ -139,7 +158,7 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
             {experiences.map((exp) => (
               <article
                 key={exp.id}
-                className="group shrink-0 flex flex-col rounded-xl border border-border/50 bg-secondary/20 hover:bg-secondary/35 transition-colors p-6 md:p-8 w-[min(88vw,420px)] sm:w-[min(85vw,480px)] lg:w-[min(80vw,520px)]"
+                className="group flex w-[340px] shrink-0 flex-col rounded-xl border border-border/50 bg-secondary/20 p-6 transition-colors hover:bg-secondary/35 sm:w-[380px] md:w-[440px] md:p-8 lg:w-[500px] xl:w-[560px]"
               >
                 <p className="text-sm text-muted-foreground font-mono mb-4">{exp.period}</p>
                 <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors flex flex-wrap items-center gap-2 mb-4">
@@ -168,7 +187,6 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
             ))}
           </div>
         </div>
-
       </div>
     </section>
   )

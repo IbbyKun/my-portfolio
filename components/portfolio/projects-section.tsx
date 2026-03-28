@@ -18,7 +18,6 @@ function smoothstep(t: number): number {
 
 export interface ProjectsSectionProps {
   parallaxFlat?: boolean
-  sectionIndex?: number
 }
 
 /** `parallaxFlat` is read by `ParallaxContainer`; scroll math needs a non-sticky parent. */
@@ -111,7 +110,7 @@ export function ProjectsSection(_props: ProjectsSectionProps) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-card via-background to-background" />
         <div className="pointer-events-none absolute inset-0 grid-pattern opacity-40" />
         <div className="pointer-events-none absolute top-1/4 left-0 w-80 h-80 bg-primary/8 rounded-full blur-3xl" />
-        <div className="relative max-w-5xl mx-auto px-6 space-y-16">
+        <div className="relative max-w-6xl mx-auto px-6 space-y-16">
           <h2 className="text-sm uppercase tracking-widest text-primary font-medium">Projects</h2>
           <div className="grid gap-10 md:grid-cols-2">
             {projects.map((project) => (
@@ -266,7 +265,7 @@ function ProjectTextBlock({ project }: { project: Project }) {
       <h3 className="text-balance text-3xl font-semibold tracking-tight text-white lg:text-4xl xl:text-[2.5rem] lg:leading-tight">
         {project.title}
       </h3>
-      <p className="mt-4 max-w-lg text-pretty text-base leading-relaxed text-muted-foreground lg:text-lg">
+      <p className="mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground lg:max-w-2xl lg:text-lg">
         {project.description}
       </p>
       <div className="mt-6 flex flex-wrap gap-2">
@@ -325,7 +324,7 @@ function ProjectStackCard({ project }: { project: Project }) {
         <h4 className="text-lg font-semibold leading-snug text-foreground lg:text-xl">
           {project.title}
         </h4>
-        <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground lg:text-base">
+        <p className="line-clamp-5 text-sm leading-relaxed text-muted-foreground lg:line-clamp-6 lg:text-base">
           {project.description}
         </p>
       </div>

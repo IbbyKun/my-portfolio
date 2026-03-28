@@ -113,14 +113,8 @@ export function ParallaxContainer({ children }: ParallaxContainerProps) {
       const childHandlesScale = parallaxFlat && parallaxScaleWithNext
       const useOuterScaleShell = !parallaxFlat
       const inner = cloneElement(
-        child as React.ReactElement<{
-          sectionIndex?: number
-          parallaxContentScale?: number
-        }>,
-        {
-          sectionIndex: index,
-          ...(childHandlesScale ? { parallaxContentScale: state.scale } : {}),
-        },
+        child as React.ReactElement<{ parallaxContentScale?: number }>,
+        childHandlesScale ? { parallaxContentScale: state.scale } : {},
       )
 
       return (

@@ -9,7 +9,6 @@ export interface SkillsSectionProps {
   parallaxScaleWithNext?: boolean
   /** Driven by ParallaxContainer when parallaxScaleWithNext — scale inner column only so bg stays full-bleed */
   parallaxContentScale?: number
-  sectionIndex?: number
 }
 
 export function SkillsSection({
@@ -44,7 +43,7 @@ export function SkillsSection({
       />
 
       <div
-        className="relative mx-auto w-full max-w-5xl origin-top px-6"
+        className="relative mx-auto w-full max-w-6xl origin-top px-6"
         style={
           parallaxContentScale < 1
             ? {

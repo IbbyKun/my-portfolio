@@ -6,8 +6,6 @@ import Link from "next/link"
 import { profile } from "@/data/profile"
 
 export function HeroSection() {
-  const { bio } = profile
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background grid-pattern">
       <div className="absolute inset-0 pointer-events-none">
@@ -16,9 +14,9 @@ export function HeroSection() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 py-20 w-full">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 lg:items-start">
-          <div className="space-y-8 flex flex-col items-center lg:items-start text-center lg:text-left">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 py-20 w-full">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 lg:items-center">
+          <div className="flex flex-col items-center space-y-8 text-center lg:items-start lg:text-left">
             <div className="relative shrink-0">
               <div
                 className="absolute inset-0 rounded-full bg-primary/20 blur-xl scale-110"
@@ -26,23 +24,21 @@ export function HeroSection() {
               />
               <div className="relative size-28 sm:size-32 rounded-full ring-2 ring-primary/30 ring-offset-4 ring-offset-background overflow-hidden">
                 <Image
-                  src="/hero-avatar.png"
+                  src="/portfolio_image.jpeg"
                   alt={profile.name}
-                  width={128}
-                  height={128}
-                  className="size-full object-cover"
+                  width={768}
+                  height={1364}
+                  className="size-full object-cover object-top"
                   priority
                 />
               </div>
             </div>
 
-            <div className="space-y-4 w-full">
+            <div className="w-full space-y-4">
               <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-foreground">
                 {profile.name}
               </h1>
-              <p className="text-xl lg:text-2xl text-primary font-medium">{profile.title}</p>
-              <p className="text-sm text-muted-foreground">{profile.education}</p>
-              <p className="text-xs text-muted-foreground/90">{bio.pronouns}</p>
+              <p className="text-xl font-medium text-primary lg:text-2xl">{profile.title}</p>
             </div>
 
             <div className="flex items-center justify-center lg:justify-start gap-4">
@@ -74,7 +70,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="space-y-6 text-center lg:text-left lg:pt-2">
+          <div className="space-y-6 text-center lg:text-left">
             <p className="text-lg text-muted-foreground leading-relaxed">
               I architect intelligent systems that bridge the gap between cutting-edge AI and robust,
               scalable applications.

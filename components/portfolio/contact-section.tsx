@@ -46,7 +46,7 @@ export function ContactSection() {
 
       <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-primary/5 to-transparent pointer-events-none" />
 
-      <div className="relative max-w-5xl mx-auto px-6">
+      <div className="relative max-w-6xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           <div className="space-y-8">
             <div className="space-y-4">
