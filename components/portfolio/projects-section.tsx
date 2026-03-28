@@ -5,6 +5,7 @@ import Image from "next/image"
 import { Github, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { projects, type Project } from "@/data/projects"
+import { useSimpleScrollLayout } from "@/components/portfolio/parallax-layout-context"
 import { cn } from "@/lib/utils"
 
 const STACK_PEEK_PX = 20
@@ -23,11 +24,13 @@ export interface ProjectsSectionProps {
 
 /** `parallaxFlat` is read by `ParallaxContainer`; scroll math needs a non-sticky parent. */
 export function ProjectsSection(_props: ProjectsSectionProps) {
+  const simpleScroll = useSimpleScrollLayout()
   const sectionRef = useRef<HTMLElement>(null)
   const [scrollDistance, setScrollDistance] = useState(0)
   const [progress, setProgress] = useState(0)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [enterDistance, setEnterDistance] = useState(800)
+  const linearLayout = reduceMotion || simpleScroll
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -38,6 +41,8 @@ export function ProjectsSection(_props: ProjectsSectionProps) {
   }, [])
 
   useLayoutEffect(() => {
+    if (linearLayout) return
+
     const measure = () => {
       const vh = window.innerHeight
       // Travel far enough that the whole card enters from below the viewport
@@ -51,10 +56,10 @@ export function ProjectsSection(_props: ProjectsSectionProps) {
     measure()
     window.addEventListener("resize", measure)
     return () => window.removeEventListener("resize", measure)
-  }, [projects.length])
+  }, [projects.length, linearLayout])
 
   useEffect(() => {
-    if (reduceMotion) {
+    if (linearLayout) {
       setProgress(1)
       return
     }
@@ -81,10 +86,10 @@ export function ProjectsSection(_props: ProjectsSectionProps) {
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
     }
-  }, [reduceMotion, scrollDistance])
+  }, [linearLayout, scrollDistance])
 
   const sectionMinHeight =
-    reduceMotion || scrollDistance <= 0
+    linearLayout || scrollDistance <= 0
       ? undefined
       : (`calc(100vh + ${scrollDistance}px)` as const)
 
@@ -102,18 +107,18 @@ export function ProjectsSection(_props: ProjectsSectionProps) {
   /** Same curve as card tilt / previous-card handoff — text fades with scroll, not after “stick” */
   const textHandoff = segment >= 1 ? smoothstep(arrive) : 0
 
-  if (reduceMotion) {
+  if (linearLayout) {
     return (
       <section
         id="projects"
-        className="relative min-h-screen bg-background py-24 lg:py-32 border-t border-border/40"
+        className="relative min-h-screen overflow-x-hidden border-t border-border/40 bg-background py-24 lg:py-32"
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-card via-background to-background" />
         <div className="pointer-events-none absolute inset-0 grid-pattern opacity-40" />
         <div className="pointer-events-none absolute top-1/4 left-0 w-80 h-80 bg-primary/8 rounded-full blur-3xl" />
-        <div className="relative max-w-6xl mx-auto px-6 space-y-16">
-          <h2 className="text-sm uppercase tracking-widest text-primary font-medium">Projects</h2>
-          <div className="grid gap-10 md:grid-cols-2">
+        <div className="relative mx-auto min-w-0 max-w-6xl space-y-16 px-6">
+          <h2 className="text-sm font-medium uppercase tracking-widest text-primary">Projects</h2>
+          <div className="grid min-w-0 grid-cols-1 gap-10 md:grid-cols-2">
             {projects.map((project) => (
               <ProjectStackCard key={project.id} project={project} />
             ))}
@@ -308,7 +313,7 @@ function ProjectStackCard({ project }: { project: Project }) {
   const useCoverPhoto = /\.(png|jpe?g|webp|gif)$/i.test(project.image)
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xl shadow-black/25">
+    <div className="min-w-0 w-full max-w-full overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xl shadow-black/25">
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-secondary to-muted lg:h-56">
         {useCoverPhoto ? (
           <>

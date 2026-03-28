@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import { ArrowUpRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { experiences, type Experience } from "@/data/experience"
+import { useSimpleScrollLayout } from "@/components/portfolio/parallax-layout-context"
 import { cn } from "@/lib/utils"
 
 export interface ExperienceSectionProps {
@@ -17,12 +18,14 @@ const EXPERIENCE_RAIL_INSET =
 
 /** `parallaxFlat` is read by `ParallaxContainer` via props; not used inside. */
 export function ExperienceSection(_props: ExperienceSectionProps) {
+  const simpleScroll = useSimpleScrollLayout()
   const sectionRef = useRef<HTMLElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const [scrollDistance, setScrollDistance] = useState(0)
   const [translateX, setTranslateX] = useState(0)
   const [reduceMotion, setReduceMotion] = useState(false)
+  const linearLayout = reduceMotion || simpleScroll
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
@@ -33,7 +36,7 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
   }, [])
 
   useLayoutEffect(() => {
-    if (reduceMotion) return
+    if (linearLayout) return
 
     const measure = () => {
       const track = trackRef.current
@@ -54,10 +57,10 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
       ro.disconnect()
       window.removeEventListener("resize", measure)
     }
-  }, [reduceMotion, experiences.length])
+  }, [linearLayout, experiences.length])
 
   useEffect(() => {
-    if (reduceMotion) return
+    if (linearLayout) return
 
     const onScroll = () => {
       const section = sectionRef.current
@@ -86,23 +89,23 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
     }
-  }, [reduceMotion, scrollDistance])
+  }, [linearLayout, scrollDistance])
 
   const sectionMinHeight =
-    reduceMotion || scrollDistance <= 0
+    linearLayout || scrollDistance <= 0
       ? undefined
       : (`calc(100vh + ${scrollDistance}px)` as const)
 
-  if (reduceMotion) {
+  if (linearLayout) {
     return (
       <section
         id="experience"
-        className="relative min-h-screen bg-card py-24 lg:py-32"
+        className="relative min-h-screen overflow-x-hidden bg-card py-24 lg:py-32"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/3 pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-background/80 to-transparent pointer-events-none" />
 
-        <div className="relative mx-auto max-w-6xl px-6">
+        <div className="relative mx-auto min-w-0 max-w-6xl px-6">
           <h2 className="text-sm uppercase tracking-widest text-primary mb-16 font-medium">
             Experience
           </h2>
@@ -158,7 +161,7 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
             {experiences.map((exp) => (
               <article
                 key={exp.id}
-                className="group flex w-[340px] shrink-0 flex-col rounded-xl border border-border/50 bg-secondary/20 p-6 transition-colors hover:bg-secondary/35 sm:w-[380px] md:w-[440px] md:p-8 lg:w-[500px] xl:w-[560px]"
+                className="group flex w-[340px] min-w-0 max-w-[min(100vw-2rem,560px)] shrink-0 flex-col rounded-xl border border-border/50 bg-secondary/20 p-6 transition-colors hover:bg-secondary/35 sm:w-[380px] md:w-[440px] md:p-8 lg:w-[500px] xl:w-[560px]"
               >
                 <p className="text-sm text-muted-foreground font-mono mb-4">{exp.period}</p>
                 <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors flex flex-wrap items-center gap-2 mb-4">
@@ -169,15 +172,15 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
                     <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   ) : null}
                 </h3>
-                <p className="text-muted-foreground leading-relaxed flex-1 mb-6">
+                <p className="mb-6 flex-1 break-words text-muted-foreground leading-relaxed">
                   {exp.description}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex min-w-0 flex-wrap gap-2">
                   {exp.technologies.map((tech) => (
                     <Badge
                       key={tech}
                       variant="secondary"
-                      className="bg-primary/10 text-primary border-0 hover:bg-primary/20"
+                      className="border-0 bg-primary/10 text-primary hover:bg-primary/20"
                     >
                       {tech}
                     </Badge>
@@ -194,19 +197,19 @@ export function ExperienceSection(_props: ExperienceSectionProps) {
 
 function ExperienceRow({ exp }: { exp: Experience }) {
   return (
-    <div className="group grid lg:grid-cols-[180px_1fr] gap-4 lg:gap-8 py-8 border-t border-border/50 hover:bg-secondary/30 transition-colors px-4 -mx-4 rounded-lg cursor-pointer">
-      <div className="text-sm text-muted-foreground font-mono">{exp.period}</div>
-      <div className="space-y-4">
+    <div className="group grid min-w-0 grid-cols-1 gap-4 py-8 border-t border-border/50 transition-colors hover:bg-secondary/30 lg:grid-cols-[180px_1fr] lg:gap-8 lg:px-4 lg:-mx-4 lg:rounded-lg cursor-pointer">
+      <div className="shrink-0 text-sm font-mono text-muted-foreground">{exp.period}</div>
+      <div className="min-w-0 space-y-4">
         <div>
-          <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+          <h3 className="flex flex-wrap items-center gap-2 text-lg font-medium text-foreground transition-colors group-hover:text-primary">
             {exp.title} · {exp.company}
             {exp.companyUrl ? (
               <ArrowUpRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
             ) : null}
           </h3>
         </div>
-        <p className="text-muted-foreground leading-relaxed">{exp.description}</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="break-words text-muted-foreground leading-relaxed">{exp.description}</p>
+        <div className="flex min-w-0 flex-wrap gap-2">
           {exp.technologies.map((tech) => (
             <Badge
               key={tech}

@@ -9,6 +9,10 @@ import {
   cloneElement,
   isValidElement,
 } from "react"
+import {
+  SimpleScrollProvider,
+  useSimpleScrollLayout,
+} from "@/components/portfolio/parallax-layout-context"
 
 interface ParallaxContainerProps {
   children: ReactNode
@@ -40,21 +44,28 @@ function ParallaxScaledShell({
   )
 }
 
-export function ParallaxContainer({ children }: ParallaxContainerProps) {
+function ParallaxContainerInner({ children }: ParallaxContainerProps) {
+  const simpleScroll = useSimpleScrollLayout()
   const containerRef = useRef<HTMLDivElement>(null)
   const [sectionStates, setSectionStates] = useState<{ opacity: number; scale: number }[]>([])
   const childCount = Children.count(children)
 
   useEffect(() => {
-    // Initialize states for all children
     setSectionStates(Array(childCount).fill({ opacity: 1, scale: 1 }))
   }, [childCount])
 
   useEffect(() => {
+    if (simpleScroll) {
+      setSectionStates(Array(childCount).fill({ opacity: 1, scale: 1 }))
+      return
+    }
+
     const handleScroll = () => {
       if (!containerRef.current) return
-      
-      const sections = containerRef.current.querySelectorAll<HTMLElement>('[data-parallax-section]')
+
+      const sections = containerRef.current.querySelectorAll<HTMLElement>(
+        "[data-parallax-section]",
+      )
       const windowHeight = window.innerHeight
       const newStates: { opacity: number; scale: number }[] = []
 
@@ -75,17 +86,12 @@ export function ParallaxContainer({ children }: ParallaxContainerProps) {
         const nextRect = next.getBoundingClientRect()
         const vh = windowHeight
 
-        // Fade only when the *next* section rises into view (handoff). Using `rect.top < 0`
-        // breaks tall sticky blocks (e.g. Skills): top stays negative for thousands of px while
-        // the user still needs to read content — opacity would sit near 0 the whole time.
         if (nextRect.top >= vh) {
           newStates[index] = { opacity: 1, scale: 1 }
           return
         }
 
         const progress = Math.min(1, (vh - nextRect.top) / (vh * 0.55))
-        // Opacity on the whole section made lower layers (e.g. hero) show through sticky panels.
-        // Keep depth via scale only so backgrounds stay visually solid.
         newStates[index] = {
           opacity: 1,
           scale: 1 - progress * 0.08,
@@ -98,7 +104,7 @@ export function ParallaxContainer({ children }: ParallaxContainerProps) {
     window.addEventListener("scroll", handleScroll, { passive: true })
     handleScroll()
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [childCount, simpleScroll])
 
   const childrenWithProps = Children.map(children, (child, index) => {
     if (isValidElement(child)) {
@@ -109,13 +115,18 @@ export function ParallaxContainer({ children }: ParallaxContainerProps) {
       const parallaxScaleWithNext = Boolean(
         (child.props as { parallaxScaleWithNext?: boolean }).parallaxScaleWithNext,
       )
-      /** Flat + scale: section keeps full-bleed bg; child applies scale to inner column only. */
       const childHandlesScale = parallaxFlat && parallaxScaleWithNext
-      const useOuterScaleShell = !parallaxFlat
+      const useOuterScaleShell = !parallaxFlat && !simpleScroll
       const inner = cloneElement(
         child as React.ReactElement<{ parallaxContentScale?: number }>,
-        childHandlesScale ? { parallaxContentScale: state.scale } : {},
+        childHandlesScale && !simpleScroll ? { parallaxContentScale: state.scale } : {},
       )
+
+      const wrapperClass = simpleScroll
+        ? "relative"
+        : parallaxFlat
+          ? "relative"
+          : "sticky top-0"
 
       return (
         <div
@@ -123,7 +134,7 @@ export function ParallaxContainer({ children }: ParallaxContainerProps) {
           data-parallax-section
           data-parallax-flat={parallaxFlat ? "true" : undefined}
           data-parallax-scale-with-next={parallaxScaleWithNext ? "true" : undefined}
-          className={parallaxFlat ? "relative" : "sticky top-0"}
+          className={wrapperClass}
           style={
             parallaxFlat
               ? {
@@ -147,8 +158,19 @@ export function ParallaxContainer({ children }: ParallaxContainerProps) {
   })
 
   return (
-    <main ref={containerRef} className="bg-background">
+    <main
+      ref={containerRef}
+      className={simpleScroll ? "overflow-x-hidden bg-background" : "bg-background"}
+    >
       {childrenWithProps}
     </main>
+  )
+}
+
+export function ParallaxContainer({ children }: ParallaxContainerProps) {
+  return (
+    <SimpleScrollProvider>
+      <ParallaxContainerInner>{children}</ParallaxContainerInner>
+    </SimpleScrollProvider>
   )
 }
