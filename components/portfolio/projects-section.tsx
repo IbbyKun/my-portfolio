@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import Image from "next/image"
 import { Github, ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { projects, type Project } from "@/data/projects"
@@ -304,18 +305,36 @@ function ProjectTextBlock({ project }: { project: Project }) {
 }
 
 function ProjectStackCard({ project }: { project: Project }) {
+  const useCoverPhoto = /\.(png|jpe?g|webp|gif)$/i.test(project.image)
+
   return (
     <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xl shadow-black/25">
-      <div className="relative h-48 bg-gradient-to-br from-secondary to-muted lg:h-56">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 lg:h-[5rem] lg:w-[5rem]">
-            <span className="text-3xl font-bold text-primary lg:text-4xl">
-              {project.title.charAt(0)}
-            </span>
+      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-secondary to-muted lg:h-56">
+        {useCoverPhoto ? (
+          <>
+            <Image
+              src={project.image}
+              alt={`${project.title} preview`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 92vw, min(42rem, 40vw)"
+            />
+            <div
+              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent"
+              aria-hidden
+            />
+          </>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-2xl border border-primary/25 bg-primary/10 lg:h-[5rem] lg:w-[5rem]">
+              <span className="text-3xl font-bold text-primary lg:text-4xl">
+                {project.title.charAt(0)}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
         {project.featured ? (
-          <div className="absolute left-4 top-4">
+          <div className="absolute left-4 top-4 z-10">
             <Badge className="bg-primary font-medium text-primary-foreground">Featured</Badge>
           </div>
         ) : null}

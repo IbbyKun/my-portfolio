@@ -15,7 +15,7 @@ export const projects: Project[] = [
     title: "Talkspresso",
     description:
       "Talkspresso is a product-led platform where professionals turn expertise into bookable, paid video sessions: calendaring, payments, and live calls in one cohesive flow. I worked across the stack to connect scheduling, billing, and real-time communication so hosts can onboard quickly and clients can book without friction. The product leans on AI where it genuinely removes toil: smarter messaging, assisted workflows, and integrations that keep the human conversation at the center. On the business side, the work contributed to measurable lift in how often users return and complete paid bookings, helping move both engagement and revenue in the right direction.",
-    image: "/placeholder.svg",
+    image: "/talkspresso.png",
     technologies: [
       "Next.js",
       "Koa.js",
@@ -34,7 +34,7 @@ export const projects: Project[] = [
     title: "Edoula",
     description:
       "Edoula is an operations hub built for doulas who were juggling spreadsheets, invoices, and ad hoc tools. The app brings scheduling, contracts, invoicing, and expense tracking into a single place so practitioners spend less time on admin and more time with clients. Integrations with maps, calendars, and payment providers (PayPal, Square) reflect how real-world care work happens on the go, with flexible payout preferences and paperwork that still needs signatures (HelloSign). The outcome wasn’t just “fewer clicks”: teams reported a sharp drop in repetitive office work and stronger retention because clients experienced a more professional, predictable service.",
-    image: "/placeholder.svg",
+    image: "/edoula.png",
     technologies: [
       "Next.js",
       "Supabase",
@@ -51,7 +51,7 @@ export const projects: Project[] = [
     title: "ScrapeOps",
     description:
       "ScrapeOps targets a hard problem: running web scraping reliably when sites change, proxies fail, and jobs silently stall. The platform treats scraping like production infrastructure, aggregating proxies, scheduling jobs, surfacing live health, and pushing alerts before failures become outages. By wiring user infrastructure and GitHub into one deploy-and-schedule path, teams could centralize operations instead of babysitting one-off scripts. Monitoring and dashboards cut downtime dramatically, while smarter proxy routing (dozens of providers, rotation, and CAPTCHA-aware paths) pushed success rates up. The stack spans Angular on the front end, Express.js and Go for services, Python with Django and Flask where it fits, Rust for performance-critical work, and PostgreSQL for durable state.",
-    image: "/placeholder.svg",
+    image: "/scrapeops.png",
     technologies: [
       "Angular",
       "Express.js",
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     title: "TA-39",
     description:
       "TA-39 is an education management product aimed at teachers who need a practical command center: rosters, assignments, grading workflows, and a bridge into tools they already use every day, especially Google Classroom through the Classroom API. The goal was to reduce context switching and duplicate data entry so educators could plan, assess, and communicate from one surface. Where it made sense, the OpenAI API augments drafting, feedback, and repetitive text work without replacing teacher judgment. Teachers saw a roughly halving of time lost to mechanical workflow steps, which is the kind of metric that shows up as calmer weeks and faster turnaround for students.",
-    image: "/placeholder.svg",
+    image: "/ta39.png",
     technologies: ["Next.js", "Python", "OpenAI API", "Google Classroom API"],
   },
   {
