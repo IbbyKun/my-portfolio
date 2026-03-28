@@ -4,31 +4,32 @@ import { Github, Linkedin, Mail, ArrowUpRight, Phone } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { profile } from "@/data/profile"
+import { contactHrefs } from "@/lib/contact-hrefs"
 
 const contactLinks = [
   {
-    href: `mailto:${profile.email}`,
+    href: contactHrefs.email,
     icon: Mail,
     label: "Email",
     value: profile.email,
     external: false as const,
   },
   {
-    href: `tel:${profile.phoneTel}`,
+    href: contactHrefs.phone,
     icon: Phone,
     label: "Phone",
     value: profile.phoneDisplay,
     external: false as const,
   },
   {
-    href: profile.githubUrl,
+    href: contactHrefs.github,
     icon: Github,
     label: "GitHub",
     value: "Profile & projects",
     external: true as const,
   },
   {
-    href: profile.linkedinUrl,
+    href: contactHrefs.linkedin,
     icon: Linkedin,
     label: "LinkedIn",
     value: profile.linkedinDisplay,
@@ -65,7 +66,7 @@ export function ContactSection() {
             </p>
 
             <Button size="lg" className="group" asChild>
-              <Link href={`mailto:${profile.email}`}>
+              <Link href={contactHrefs.email}>
                 <Mail className="w-4 h-4 mr-2" />
                 Email me
                 <ArrowUpRight className="w-4 h-4 ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

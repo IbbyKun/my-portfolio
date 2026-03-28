@@ -12,9 +12,9 @@ export interface SkillCategory {
 }
 
 export const stats: Stat[] = [
-  { value: "3+", label: "Years shipping production software" },
+  { value: "4+", label: "Years shipping production software" },
   { value: "20+", label: "Product milestones & client deliverables" },
-  { value: "5", label: "Engineers led (current squad)" },
+  { value: "15", label: "Engineers led (current squad)" },
   { value: "12+", label: "Vendor & API integrations live" },
 ]
 

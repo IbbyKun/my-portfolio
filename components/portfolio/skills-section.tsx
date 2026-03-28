@@ -88,14 +88,16 @@ export function SkillsSection({
                 {category.skills.map((skill, skillIndex) => (
                   <span
                     key={skill}
-                    className={`cursor-default rounded-md bg-secondary px-3 py-1.5 text-sm text-secondary-foreground transition-all duration-500 hover:bg-primary/10 hover:text-primary ${
+                    className={`inline-block transition-[opacity,transform] duration-500 ease-out ${
                       isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
                     }`}
                     style={{
                       transitionDelay: `${120 + categoryIndex * 60 + skillIndex * 25}ms`,
                     }}
                   >
-                    {skill}
+                    <span className="inline-block cursor-default rounded-md bg-secondary px-3 py-1.5 text-sm text-secondary-foreground transition-colors duration-150 ease-out hover:bg-primary/10 hover:text-primary">
+                      {skill}
+                    </span>
                   </span>
                 ))}
               </div>

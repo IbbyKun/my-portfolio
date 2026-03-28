@@ -10,8 +10,8 @@ export const profile = {
   phoneTel: "+923099072684",
   linkedinDisplay: "M. Ibrahim",
   /** Set your real profile URLs */
-  githubUrl: "https://github.com",
-  linkedinUrl: "https://www.linkedin.com",
+  githubUrl: "https://github.com/IbbyKun",
+  linkedinUrl: "www.linkedin.com/in/m-ibrahim2412",
   education: "B.S. Software Engineering — FAST-NUCES (2020–2024)",
 
   bio: {

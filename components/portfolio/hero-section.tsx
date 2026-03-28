@@ -4,6 +4,7 @@ import { Github, Linkedin, Mail, ArrowDown } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { profile } from "@/data/profile"
+import { contactHrefs } from "@/lib/contact-hrefs"
 
 export function HeroSection() {
   return (
@@ -43,7 +44,7 @@ export function HeroSection() {
 
             <div className="flex items-center justify-center lg:justify-start gap-4">
               <Link
-                href={profile.githubUrl}
+                href={contactHrefs.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -52,7 +53,7 @@ export function HeroSection() {
                 <span className="sr-only">GitHub</span>
               </Link>
               <Link
-                href={profile.linkedinUrl}
+                href={contactHrefs.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 text-muted-foreground hover:text-foreground transition-colors"
@@ -61,7 +62,7 @@ export function HeroSection() {
                 <span className="sr-only">LinkedIn</span>
               </Link>
               <Link
-                href={`mailto:${profile.email}`}
+                href={contactHrefs.email}
                 className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Mail className="w-5 h-5" />
