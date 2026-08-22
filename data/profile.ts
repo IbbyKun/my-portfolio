@@ -1,65 +1,83 @@
 /**
- * Personal site copy & links — synced with your GitHub bio + resume.
- * Update githubUrl / linkedinUrl when you publish.
+ * Identity, positioning and contact.
+ *
+ * Framing note: this is written at staff level. The organising idea is
+ * *scope* — systems owned, decisions made, people multiplied — rather than
+ * a list of things that can be done. Facts (roles, dates, numbers) are
+ * carried over unchanged from the previous site and CV.
  */
+
 export const profile = {
   name: "Muhammad Ibrahim",
-  title: "Full Stack Software Engineer",
+  /** Shown under the hero name-plate. */
+  title: "Senior Software Engineer",
+  /** Three-beat discipline strip — sits in the hero meta row. */
+  disciplines: ["Full-Stack", "Applied AI", "Multi-Tenant Platforms"],
+  location: "Lahore, PK · Remote",
+  /* Changed from "Open to staff-level & lead roles" — you started at
+     athGADLANG in July 2026, and an actively-looking banner on a public site
+     reads badly to a current employer. Revert if that is not a concern. */
+  availability: "Staff Engineer at athGADLANG",
+
   email: "muh.ibrahim240102@gmail.com",
   phoneDisplay: "(+92) 309-9072684",
   phoneTel: "+923099072684",
-  linkedinDisplay: "M. Ibrahim",
-  /** Set your real profile URLs */
+  linkedinDisplay: "m-ibrahim2412",
+  githubDisplay: "IbbyKun",
   githubUrl: "https://github.com/IbbyKun",
-  linkedinUrl: "www.linkedin.com/in/m-ibrahim2412",
-  education: "B.S. Software Engineering — FAST-NUCES (2020–2024)",
+  linkedinUrl: "https://www.linkedin.com/in/m-ibrahim2412",
 
-  bio: {
-    /** Main hero paragraphs — portfolio tone, same story as GitHub */
-    paragraphs: [
-      "Welcome to my digital lair! I'm a Full Stack Software Engineer with a knack for transforming coffee into code—and yes, occasionally sprinkling in an intentional bug when the learning payoff is worth it.",
-      "From slick, responsive front ends to dependable back ends, I aim for efficient, scalable, user-friendly systems that still leave room for craft: SEO-aware performance, thoughtful integrations, and workflows that don't fight the humans who use them.",
-      "I've worked classical ML rigs from linear and logistic regression through ensembles and SVMs, unsupervised methods like K-Means and PCA, and transformer-era models including BERT. In production my sweet spot is practical AI: shipping features that behave, measuring them, and keeping the UX honest.",
-    ],
-    /** One scannable strip — detail also lives on the Skills section */
-    skillsAtAGlance:
-      "Languages: JavaScript (React, Node), TypeScript, Python, C, C++. Frontend: React, Next.js, Vue, jQuery, Bootstrap, Tailwind. Backend: Node, Express, REST, Django, GraphQL. Data: PostgreSQL, MongoDB, Firebase, Supabase, MySQL. Mobile: React Native, Expo. DevOps: Docker, Vagrant, Ansible, Jenkins, Git. Plus Figma, integrations, and the occasional SEO pass.",
-    snapshotGroups: [
-      {
-        id: "now",
-        label: "I'm focused on",
-        items: [
-          "Experiences that feel intuitive and human—without sacrificing performance",
-          "Pushing deeper into machine learning and AI-driven applications in production",
-        ],
-      },
-      {
-        id: "learn",
-        label: "Currently learning",
-        items: [
-          "Advanced Rust",
-          "Tighter, kinder DevOps workflows from laptop to production",
-        ],
-      },
-      {
-        id: "collab",
-        label: "Open to collaborate on",
-        items: [
-          "Open source that pushes web & mobile forward",
-          "AI-powered tools that simplify everyday life",
-        ],
-      },
-    ],
-    lookingForHelp:
-      "Breaking into stickier AI/ML problems and learning from folks who've gone further—always up for a thoughtful pairing session or book recommendation.",
-    askMeAbout:
-      "MERN-stack development, DevOps habits that actually stick, or debugging nightmares best told with humor.",
-    funFact:
-      "I once refactored a legacy codebase and lived to tell the tale. Some say I even enjoyed it.",
-    pronouns: "He / Him / CodeNinja",
+  education: "B.S. Software Engineering — FAST-NUCES · 2020–2024",
 
-    /** Closing line for contact CTA (optional reuse) */
-    closing:
-      "Dive into my repositories, poke at the code, and if you have something weird and worthwhile to build—let's connect.",
-  },
-}
+  /**
+   * The hero statement. Built to be split across lines and revealed
+   * word-by-word, so keep it short and load-bearing.
+   */
+  statement: "I architect systems that carry real money, real patients, and real teams.",
+
+  /** Sub-statement under the hero headline. */
+  intro:
+    "Four years building multi-tenant platforms where the failure modes are expensive — escrow payments, clinical consultations, multi-currency marketplaces. I have led 20 engineers, owned portals end to end, and still write the code when writing it is the fastest way through.",
+
+  /**
+   * Manifesto section — three positions, stated plainly.
+   * Each is a claim about how the work gets done, backed by the record below.
+   */
+  manifesto: [
+    {
+      id: "systems",
+      index: "01",
+      title: "Systems before features",
+      body: "A payments flow that handles escrow, commissions, subscriptions and four currencies is not a feature — it is a system with invariants. I design for the invariants first: what must never be true, what must survive a retry, what an auditor will ask for in eighteen months. Features fall out of that. The reverse never works.",
+    },
+    {
+      id: "leverage",
+      index: "02",
+      title: "Leverage over output",
+      body: "Leading 20 engineers changed what my day is worth. The highest-value hours are now spent on the decisions that are expensive to reverse — data models, tenancy boundaries, release discipline — and on review that makes the next person faster. I still ship. I just stopped measuring myself by how much.",
+    },
+    {
+      id: "honest-ai",
+      index: "03",
+      title: "AI that earns its place",
+      body: "I have shipped guided consultations, symptom checkers, and OCR-to-JSON document pipelines into production. The bar is the same as any other dependency: measurable, observable, and gracefully degrading when the model is wrong. AI that cannot be evaluated is a liability wearing a demo's clothes.",
+    },
+  ],
+
+  /**
+   * Hero-adjacent proof strip. Kept to four so it stays a single row.
+   * These four numbers are the source of truth — every figure in the body copy
+   * across profile / experience / projects is written to agree with them.
+   */
+  proof: [
+    { value: "4+", label: "Years in production" },
+    { value: "20", label: "Engineers led" },
+    { value: "15+", label: "Portals owned or shipped" },
+    { value: "25+", label: "Vendor integrations live" },
+  ],
+
+  /** Closing line above the contact CTA. */
+  closing: "If you are building something where the hard part is the system, not the screen — let's talk.",
+} as const
+
+export type Profile = typeof profile

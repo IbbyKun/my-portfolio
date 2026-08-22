@@ -1,187 +1,393 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
+/* =========================================================================
+   DESIGN SYSTEM — "Acid on Ink"
+   Near-black canvas, off-white type, one acid-lime accent.
+   Reference language: editorial grid, oversized display type, rule lines,
+   monospace meta-labels, grain, WebGL.
+   ========================================================================= */
 
-:root {
-  /* Deep dark tech theme - inspired by design brief */
-  --background: oklch(0.12 0.015 250);
-  --foreground: oklch(0.95 0.01 250);
-  --card: oklch(0.15 0.015 250);
-  --card-foreground: oklch(0.95 0.01 250);
-  --popover: oklch(0.15 0.015 250);
-  --popover-foreground: oklch(0.95 0.01 250);
-  --primary: oklch(0.75 0.15 180);
-  --primary-foreground: oklch(0.12 0.015 250);
-  --secondary: oklch(0.20 0.015 250);
-  --secondary-foreground: oklch(0.85 0.01 250);
-  --muted: oklch(0.25 0.015 250);
-  --muted-foreground: oklch(0.65 0.01 250);
-  --accent: oklch(0.75 0.15 180);
-  --accent-foreground: oklch(0.12 0.015 250);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.25 0.015 250);
-  --input: oklch(0.20 0.015 250);
-  --ring: oklch(0.75 0.15 180);
-  --chart-1: oklch(0.75 0.15 180);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.15 0.015 250);
-  --sidebar-foreground: oklch(0.95 0.01 250);
-  --sidebar-primary: oklch(0.75 0.15 180);
-  --sidebar-primary-foreground: oklch(0.12 0.015 250);
-  --sidebar-accent: oklch(0.20 0.015 250);
-  --sidebar-accent-foreground: oklch(0.95 0.01 250);
-  --sidebar-border: oklch(0.25 0.015 250);
-  --sidebar-ring: oklch(0.75 0.15 180);
+@theme {
+  /* ---- Core palette ---------------------------------------------------- */
+  --color-ink: #0a0a0a;
+  --color-ink-raised: #121212;
+  --color-ink-sunken: #050505;
+  --color-paper: #f2f2f0;
+  --color-acid: #ccff00;
+  --color-acid-dim: #a3cc00;
+
+  /* Neutral ramp, warm-neutral so it never reads blue on OLED */
+  --color-grey-100: #e4e4e1;
+  --color-grey-200: #b8b8b4;
+  --color-grey-300: #8c8c88;
+  --color-grey-400: #6e6e6a;
+  --color-grey-500: #4a4a47;
+  --color-grey-600: #2e2e2c;
+  --color-grey-700: #1f1f1e;
+  --color-grey-800: #161615;
+
+  /* ---- Semantic aliases ------------------------------------------------ */
+  --color-background: var(--color-ink);
+  --color-foreground: var(--color-paper);
+  --color-muted: var(--color-grey-300);
+  --color-subtle: var(--color-grey-400);
+  --color-line: rgba(242, 242, 240, 0.12);
+  --color-line-strong: rgba(242, 242, 240, 0.28);
+
+  /* ---- Type ------------------------------------------------------------ */
+  --font-display: var(--font-archivo), 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: var(--font-inter-tight), 'Inter Tight', 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Display scale — fluid, clamped. Tuned for uppercase Archivo 800/900. */
+  --text-d1: clamp(3.25rem, 13vw, 13rem);
+  --text-d1--line-height: 0.86;
+  --text-d1--letter-spacing: -0.045em;
+
+  --text-d2: clamp(2.5rem, 8.5vw, 8rem);
+  --text-d2--line-height: 0.9;
+  --text-d2--letter-spacing: -0.04em;
+
+  --text-d3: clamp(2rem, 5.5vw, 4.5rem);
+  --text-d3--line-height: 0.95;
+  --text-d3--letter-spacing: -0.03em;
+
+  --text-d4: clamp(1.5rem, 3vw, 2.5rem);
+  --text-d4--line-height: 1.05;
+  --text-d4--letter-spacing: -0.02em;
+
+  /* Editorial body — larger than default, generous leading */
+  --text-lead: clamp(1.125rem, 1.9vw, 1.5rem);
+  --text-lead--line-height: 1.38;
+  --text-lead--letter-spacing: -0.01em;
+
+  /* Monospace meta label */
+  --text-meta: 0.6875rem;
+  --text-meta--line-height: 1.2;
+  --text-meta--letter-spacing: 0.16em;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --spacing-gutter: clamp(1.25rem, 4vw, 4rem);
+  /* Two adjacent sections each contribute this, so the gap between them is
+     double the value — 14rem read as ~450px of dead space at desktop. */
+  --spacing-section: clamp(4.5rem, 8vw, 8.5rem);
 }
 
-.dark {
-  --background: oklch(0.12 0.015 250);
-  --foreground: oklch(0.95 0.01 250);
-  --card: oklch(0.15 0.015 250);
-  --card-foreground: oklch(0.95 0.01 250);
-  --popover: oklch(0.15 0.015 250);
-  --popover-foreground: oklch(0.95 0.01 250);
-  --primary: oklch(0.75 0.15 180);
-  --primary-foreground: oklch(0.12 0.015 250);
-  --secondary: oklch(0.20 0.015 250);
-  --secondary-foreground: oklch(0.85 0.01 250);
-  --muted: oklch(0.25 0.015 250);
-  --muted-foreground: oklch(0.65 0.01 250);
-  --accent: oklch(0.75 0.15 180);
-  --accent-foreground: oklch(0.12 0.015 250);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.25 0.015 250);
-  --input: oklch(0.20 0.015 250);
-  --ring: oklch(0.75 0.15 180);
-  --chart-1: oklch(0.75 0.15 180);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.15 0.015 250);
-  --sidebar-foreground: oklch(0.95 0.01 250);
-  --sidebar-primary: oklch(0.75 0.15 180);
-  --sidebar-primary-foreground: oklch(0.12 0.015 250);
-  --sidebar-accent: oklch(0.20 0.015 250);
-  --sidebar-accent-foreground: oklch(0.95 0.01 250);
-  --sidebar-border: oklch(0.25 0.015 250);
-  --sidebar-ring: oklch(0.75 0.15 180);
-}
-
-@theme inline {
-  --font-sans: 'Inter', 'Inter Fallback', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Geist Mono', 'Geist Mono Fallback', monospace;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
+/* =========================================================================
+   BASE
+   ========================================================================= */
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--color-line);
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-  
+
   html {
-    scroll-behavior: smooth;
+    /* Lenis drives scrolling; native smooth would fight it. */
+    scroll-behavior: auto;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  /* Lenis needs the document to not be height-constrained */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-acid);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-acid);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Hide the native cursor only where the custom one is active and
+     a fine pointer exists. Never on touch. */
+  @media (pointer: fine) {
+    html[data-custom-cursor='on'],
+    html[data-custom-cursor='on'] * {
+      cursor: none;
+    }
   }
 }
 
-/* Horizontal scroll section */
-.horizontal-scroll-section {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+/* =========================================================================
+   UTILITIES
+   ========================================================================= */
+
+@utility container-grid {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 96rem;
+  padding-inline: var(--spacing-gutter);
 }
 
-.horizontal-scroll-section::-webkit-scrollbar {
-  display: none;
+/* Monospace all-caps meta label used for section numbers, tags, eyebrows */
+@utility label {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  line-height: 1.2;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
-.horizontal-scroll-item {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
+/* Oversized uppercase display type */
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-stretch: 100%;
 }
 
-/* Parallax effect base */
-.parallax-section {
-  position: relative;
+/* Masked line reveal: the child slides up out of an overflow-hidden box.
+   Deliberately does not set `display` — call sites pair it with `block` or
+   `inline-block`, and having both declare it made the result depend on
+   utility ordering. The padding/negative-margin pair stops descenders and
+   accents being clipped by the mask without changing layout. */
+@utility line-mask {
   overflow: hidden;
+  padding-block: 0.06em;
+  margin-block: -0.06em;
 }
 
-/* Text highlight animation */
-@keyframes textGlow {
-  0%, 100% {
-    text-shadow: 0 0 20px rgba(94, 234, 212, 0.3);
+/* Thin hairline rule matching the editorial grid */
+@utility rule {
+  height: 1px;
+  width: 100%;
+  background-color: var(--color-line);
+}
+
+/* =========================================================================
+   COMPONENT-LEVEL PRIMITIVES
+   ========================================================================= */
+
+/* ---- Grain overlay ------------------------------------------------------
+   A tiled SVG fractal-noise texture. Fixed, non-interactive, sits above
+   everything except the cursor. Animated in 8 steps to avoid the "static
+   dirt on the screen" look without costing a repaint-heavy filter.
+   ------------------------------------------------------------------------ */
+.grain {
+  position: fixed;
+  /* Just enough overhang to hide the jitter translate below. This used to be
+     -150%, i.e. a layer 16x the viewport's area — it was the single largest
+     cost in the whole page during scroll. */
+  inset: -6%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.038;
+  background-image: var(--grain-src);
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  will-change: transform;
+  animation: grain-shift 0.7s steps(1) infinite;
+}
+
+@keyframes grain-shift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  /* Kept within the 6% overhang above so no edge is ever exposed. */
+  12.5% {
+    transform: translate3d(-3%, -1.5%, 0);
+  }
+  25% {
+    transform: translate3d(2%, -3.5%, 0);
+  }
+  37.5% {
+    transform: translate3d(-4%, 2.5%, 0);
   }
   50% {
-    text-shadow: 0 0 40px rgba(94, 234, 212, 0.6);
+    transform: translate3d(3.5%, 1%, 0);
+  }
+  62.5% {
+    transform: translate3d(-1.5%, 4%, 0);
+  }
+  75% {
+    transform: translate3d(2.5%, -2.5%, 0);
+  }
+  87.5% {
+    transform: translate3d(-3.5%, -0.5%, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
   }
 }
 
-.text-glow {
-  animation: textGlow 3s ease-in-out infinite;
+/* ---- Custom cursor ------------------------------------------------------ */
+.cursor-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  pointer-events: none;
+  will-change: transform;
 }
 
-/* Grid pattern background */
-.grid-pattern {
-  background-image: 
-    linear-gradient(rgba(94, 234, 212, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(94, 234, 212, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
+.cursor-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 9999px;
+  background-color: var(--color-paper);
+  /* The blend lives here, on a small sized box, rather than on the zero-sized
+     root — same inversion effect, a fraction of the compositing cost. */
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.35s var(--ease-out-expo),
+    height 0.35s var(--ease-out-expo),
+    background-color 0.35s var(--ease-out-expo);
 }
 
-/* Hide scrollbar */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.cursor-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  color: var(--color-ink);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out-expo);
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* ---- Link underline sweep ----------------------------------------------- */
+.link-sweep {
+  position: relative;
+  display: inline-block;
+}
+
+.link-sweep::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -0.12em;
+  height: 1px;
+  width: 100%;
+  background-color: currentColor;
+  transform-origin: right;
+  transform: scaleX(0);
+  transition: transform 0.5s var(--ease-out-expo);
+}
+
+.link-sweep:hover::after,
+.link-sweep:focus-visible::after {
+  transform-origin: left;
+  transform: scaleX(1);
+}
+
+/* ---- Marquee ------------------------------------------------------------ */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll var(--marquee-duration, 40s) linear infinite;
+}
+
+.marquee-track[data-direction='right'] {
+  animation-direction: reverse;
+}
+
+.marquee-root:hover .marquee-track {
+  animation-play-state: var(--marquee-hover-state, running);
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ---- Scrollbar ---------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ink);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-grey-600);
+  border-radius: 999px;
+  border: 3px solid var(--color-ink);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-grey-500);
+}
+
+/* =========================================================================
+   REDUCED MOTION
+   Everything decorative stops. Content stays visible — reveals must never
+   leave text stuck at opacity 0.
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Applied by Reveal / SplitText / Magnetic to their animated element. */
+  .rm-static {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .grain {
+    animation: none;
+  }
+
+  .marquee-track {
+    animation: none;
+    transform: none;
+  }
+
+  .cursor-root {
+    display: none;
+  }
+
+  html[data-custom-cursor='on'],
+  html[data-custom-cursor='on'] * {
+    cursor: auto;
+  }
 }

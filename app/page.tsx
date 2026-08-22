@@ -1,21 +1,36 @@
-import { HeroSection } from "@/components/portfolio/hero-section"
-import { ExperienceSection } from "@/components/portfolio/experience-section"
-import { ProjectsSection } from "@/components/portfolio/projects-section"
-import { SkillsSection } from "@/components/portfolio/skills-section"
-import { ContactSection } from "@/components/portfolio/contact-section"
-import { Footer } from "@/components/portfolio/footer"
-import { ParallaxContainer } from "@/components/portfolio/parallax-container"
+import { Hero } from "@/components/sections/hero"
+import { ProofStrip } from "@/components/sections/proof-strip"
+import { Approach } from "@/components/sections/approach"
+import { Work } from "@/components/sections/work"
+import { TrackRecord } from "@/components/sections/track-record"
+import { Capabilities } from "@/components/sections/capabilities"
+import { Contact } from "@/components/sections/contact"
+import { Footer } from "@/components/sections/footer"
 
-export default function PortfolioPage() {
+/**
+ * Reading order is deliberate:
+ *
+ *   Hero        — who, and at what level
+ *   Proof       — the numbers, before any prose
+ *   Approach    — how decisions get made          (the staff-level argument)
+ *   Work        — what that produced              (the evidence)
+ *   Track record— where the scope came from       (the history)
+ *   Capabilities— the toolkit, as supporting detail
+ *   Contact     — the ask
+ *
+ * Claims first, evidence second, tools last. The previous site led with tools.
+ */
+export default function HomePage() {
   return (
-    <ParallaxContainer>
-      <HeroSection />
-      <ExperienceSection parallaxFlat />
-      <ProjectsSection parallaxFlat />
-      {/* Normal document scroll through full content; Contact still stacks on top after */}
-      <SkillsSection parallaxFlat parallaxScaleWithNext />
-      <ContactSection />
-      <Footer parallaxFlat />
-    </ParallaxContainer>
+    <>
+      <Hero />
+      <ProofStrip />
+      <Approach />
+      <Work />
+      <TrackRecord />
+      <Capabilities />
+      <Contact />
+      <Footer />
+    </>
   )
 }
