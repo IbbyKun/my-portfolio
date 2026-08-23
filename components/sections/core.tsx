@@ -165,7 +165,13 @@ export function Core() {
                   columns of body copy competing with each other and with the
                   graph — three things in the frame, none of them able to
                   breathe. The tiers are named on the nodes themselves. */}
-              <div className="md:col-span-5 md:ml-auto md:w-[46%]">
+              {/* `relative` is load-bearing. The inactive practices are
+                  positioned `absolute inset-x-0` so they can crossfade in
+                  place, and without a positioned ancestor here that resolved
+                  against the sticky container instead — so every outgoing
+                  practice was laid out full-width from the left gutter and
+                  flashed on the left of the screen each time the copy changed. */}
+              <div className="relative md:col-span-5 md:ml-auto md:w-[46%]">
                 <p className="label text-acid">{practices[active]?.index}</p>
                 {practices.map((practice, i) => (
                   <motion.div
