@@ -16,7 +16,8 @@ export const sections: SectionDef[] = [
   { id: "work", label: "Work", index: "02" },
   { id: "track-record", label: "Track Record", index: "03" },
   { id: "capabilities", label: "Capabilities", index: "04" },
-  { id: "contact", label: "Contact", index: "05" },
+  { id: "core", label: "Infrastructure", index: "05" },
+  { id: "contact", label: "Contact", index: "06" },
 ]
 
 /** Nav omits the hero — you get there with the wordmark. */

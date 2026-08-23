@@ -71,6 +71,20 @@ export function useGLTier(): GLTier {
       const fewCores = (navigator.hardwareConcurrency ?? 8) <= 4
       const lowEnd = lowMemory || fewCores
 
+      // No WebGL on phones at all — not a reduced version of it.
+      //
+      // Every one of these scenes is built around a pointer that hovers and a
+      // scroll that can be scrubbed slowly, and a touch screen has neither. The
+      // result was a large always-on GPU cost, a companion that had to be
+      // dimmed to 40% so it stopped covering the copy, and a five-viewport
+      // flight nobody could steer. The typography carries the page perfectly
+      // well on its own; this keeps the phone build fast and legible and keeps
+      // the desktop build free to be ambitious.
+      if (mobile) {
+        setTier({ ...SSR_DEFAULT, ready: true })
+        return
+      }
+
       setTier({
         enabled: true,
         // Bloom + chromatic aberration are a full-screen pass per frame. Only

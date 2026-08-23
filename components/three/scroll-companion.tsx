@@ -6,6 +6,11 @@ import * as THREE from "three"
 import { noiseChunk } from "@/components/three/shaders/noise"
 import { useGLTier } from "@/hooks/use-gl-tier"
 import { getCompanionFocus } from "@/lib/companion-signal"
+// The core section's flight. The companion becomes the same ball, in the same
+// place, at the same size, for the moment the two swap over.
+import { getCoreProgress, shellRadiusPx } from "@/lib/core-flight"
+import { CAM_FAR, FOV, SHELL_R, cameraZ, pixelsToRadius } from "@/lib/core-flight"
+import { Interior, interiorNodes } from "@/components/three/core-scene"
 // Side-effect import: filters one upstream three.js deprecation log.
 import "@/lib/three-console"
 
@@ -111,6 +116,16 @@ const ANCHORS: Anchor[] = [
   { id: "track-record", x: 1.06, y: 0.46, rFrac: 0.5, opacity: 1 },
   // Capabilities is special-cased: it docks to #companion-dock.
   { id: "capabilities", x: 0.84, y: 0.44, rFrac: 0.42, opacity: 1 },
+  // The handoff. The companion swells to fill the viewport, centres, and
+  // dissolves — and the core scene fades up behind it with its own camera
+  // already inside a cloud of points. Neither object moves through the other;
+  // the illusion is that the shell you were watching is the one you end up in,
+  // and it holds because both are the same dust at the same scale.
+  // Centre screen, and sized to match the core scene's shell exactly — see the
+  // override in the frame loop, which takes over from this anchor as soon as
+  // the section starts. The anchor exists so the approach is already in the
+  // right place before the override engages, with nothing to snap.
+  { id: "core", x: 0.5, y: 0.5, rFrac: 0.252, opacity: 1, disperse: 0 },
   { id: "contact", x: 1.02, y: 0.34, rFrac: 0.45, opacity: 1 },
 ]
 
@@ -394,13 +409,22 @@ const STREAM_COUNT = 3
 function Companion({
   motionScale,
   wrapperRef,
+  interiorRef,
+  inside,
 }: {
   motionScale: number
-  /** The fixed box this scene lives in; moved via CSS transform each frame. */
+  /** The full-viewport host. Only its opacity is written now — the ball itself
+   *  is placed in world space so that the camera can fly into it. */
   wrapperRef: React.RefObject<HTMLDivElement | null>
+  /** The interior's group, scaled and positioned to sit inside the ball. */
+  interiorRef: React.RefObject<THREE.Group | null>
+  inside: React.RefObject<number>
 }) {
+  const { camera } = useThree()
   const groupRef = useRef<THREE.Group>(null)
   const cageRef = useRef<THREE.LineSegments>(null)
+  /** The shell thins as the camera passes through it. */
+  const shellFade = useRef(1)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
 
   // Layout, measured on mount/resize rather than per frame — reading
@@ -597,6 +621,9 @@ function Companion({
     const scrollY = window.scrollY
     const vw = window.innerWidth
     const vh = window.innerHeight
+    const coreRaw = getCoreProgress()
+    const coreEngaged = coreRaw >= 0 && coreRaw <= 1
+    const coreP = coreEngaged ? coreRaw : 0
     const centreOfScreen = scrollY + vh / 2
 
     let targetX = vw * 0.8
@@ -716,6 +743,23 @@ function Companion({
       }
     }
 
+    // ---- The core flight ---------------------------------------------------
+    // While the core section is on screen the companion stops choreographing
+    // itself and simply *becomes* that section's shell: same centre, same
+    // on-screen radius, computed from the same camera path. Then it fades out
+    // over a short window as the section's own canvas fades in over the top of
+    // it. Because both are a sphere of dust of identical size in identical
+    // position, the swap has nothing to give itself away with.
+    if (coreEngaged) {
+      targetX = vw / 2
+      targetY = vh / 2
+      // Only used for the frames before the flight proper starts; once engaged
+      // the world radius is frozen and the camera does the work.
+      targetR = shellRadiusPx(0, vh)
+      targetO = 1
+      targetDisperse = 0
+    }
+
     targetR = Math.min(targetR, MAX_RADIUS)
 
     // Below the md breakpoint every column is full width, so the anchors have
@@ -787,16 +831,53 @@ function Companion({
     // compositor operation, whereas repositioning inside a viewport-sized
     // canvas would mean paying for that canvas everywhere.
     const wrapper = wrapperRef.current
-    if (wrapper) {
-      wrapper.style.transform = `translate3d(${Math.round(pos.current.x - BOX / 2)}px, ${Math.round(pos.current.y - BOX / 2)}px, 0)`
-      wrapper.style.opacity = String(opacity.current)
-    }
+    if (wrapper) wrapper.style.opacity = String(opacity.current)
 
-    // No dispersion shrink any more: the shader interpolates between the
-    // sphere position and the stream position rather than adding an offset, so
-    // the cloud is never larger than the wider of the two and cannot clip.
+    // ---- Placement --------------------------------------------------------
+    // The canvas is the whole viewport and the camera is a perspective one, so
+    // the ball is placed by moving it in world space rather than by moving a
+    // div. That is what lets the camera fly *into* it: a small box translated
+    // around the page cannot be entered, which is why this used to need a
+    // second sphere in a second canvas, and why the swap between them was
+    // always visible however carefully they were matched.
+    const camDist = coreEngaged ? cameraZ(coreP) : CAM_FAR
+    camera.position.z = THREE.MathUtils.damp(camera.position.z, camDist, 5, dt)
+    // Slide the frame left of the copy column once inside; zero at both ends,
+    // so the ball is dead centre whenever the page is looking at it as a ball.
+    const journey = coreEngaged ? Math.sin(Math.PI * coreP) : 0
+    camera.position.x = THREE.MathUtils.damp(camera.position.x, 3.1 * journey, 4, dt)
+    camera.lookAt(camera.position.x, 0, 0)
+
+    // World units per CSS pixel on the plane the ball sits in. Correct for
+    // *position*, which is a point on that plane — but not for the ball's
+    // radius, which is a silhouette and needs the tangent relation instead.
+    const unitsPerPx = (2 * camera.position.z * Math.tan((FOV * Math.PI) / 360)) / vh
+
     const drawRadius = Math.min(radius.current, MAX_RADIUS)
-    group.scale.setScalar(drawRadius / CAGE_RADIUS)
+    // Normally the world radius tracks the wanted pixel radius, so the ball is
+    // the size the choreography asks for. During the flight it is frozen and
+    // the camera moves instead — which is what makes it grow. The two agree
+    // exactly at the handover point, by construction: the core anchor's pixel
+    // radius is defined as SHELL_R at CAM_FAR.
+    const worldR = coreEngaged
+      ? SHELL_R
+      : pixelsToRadius(drawRadius, camera.position.z, vh)
+    group.scale.setScalar(worldR / CAGE_RADIUS)
+    group.position.set(
+      (pos.current.x - vw / 2) * unitsPerPx,
+      -(pos.current.y - vh / 2) * unitsPerPx,
+      0,
+    )
+    if (interiorRef.current) {
+      // The interior is authored against a shell of SHELL_R world units.
+      interiorRef.current.scale.setScalar(worldR / SHELL_R)
+      interiorRef.current.position.copy(group.position)
+    }
+    // Nothing inside is drawn until the camera has passed through the shell.
+    inside.current = 1 - THREE.MathUtils.smoothstep(camera.position.z, SHELL_R * 0.8, SHELL_R * 2.1)
+    // ...and the shell itself thins out as you go through it, so it is not a
+    // wall of dust hanging behind your head.
+    shellFade.current = THREE.MathUtils.smoothstep(camera.position.z, SHELL_R * 0.7, SHELL_R * 1.8)
 
     // Streams are laid out in pixels, so they have to be told how big the
     // object currently is or a phone would get a 900px comet.
@@ -807,7 +888,7 @@ function Companion({
     // zoomed-in cap would read as thin dust next to the hero field it is
     // supposed to rhyme with.
     material.uniforms.uSizeBoost.value = THREE.MathUtils.clamp(drawRadius / 430, 0.9, 1.5)
-    material.uniforms.uOpacity.value = 1
+    material.uniforms.uOpacity.value = shellFade.current
 
     // ---- Pointer proximity ------------------------------------------------
     const screenX = pos.current.x
@@ -826,14 +907,23 @@ function Companion({
     )
     material.uniforms.uPointerForce.value = pointerForce.current
 
-    // Pointer into object space, so the shader's bulge follows the cursor on
-    // screen rather than rotating away with the mesh.
+    // Pointer into object space, so the ripple follows the cursor on screen
+    // rather than rotating away with the mesh.
+    //
+    // This used to read the cursor's offset from the ball's centre straight
+    // into world units, which was correct only while the camera was
+    // orthographic at zoom 1 and one world unit was one pixel. Under
+    // perspective that assumption is off by the pixels-per-unit factor, so the
+    // rings appeared somewhere other than under the cursor. Now the pointer is
+    // placed on the ball's own plane in world space and converted properly.
     if (pointerForce.current > 0.001) {
-      // Pointer -> box-local px -> world (origin at the box's centre).
       pointerLocal.current.set(
-        pointerPx.current.x - screenX,
-        screenY - pointerPx.current.y,
-        radius.current,
+        (pointerPx.current.x - vw / 2) * unitsPerPx,
+        -(pointerPx.current.y - vh / 2) * unitsPerPx,
+        // One radius toward the camera, so the ripple centres on the surface
+        // facing the viewer rather than on the equator. Only the direction
+        // survives — the shader normalises this.
+        worldR,
       )
       group.worldToLocal(pointerLocal.current)
       material.uniforms.uPointer.value.copy(pointerLocal.current)
@@ -858,7 +948,11 @@ function Companion({
       cageRef.current.rotation.y -= t * 0.34
       cageRef.current.rotation.x += t * 0.12 + leanY * 0.01
       const cageMat = cageRef.current.material as THREE.LineBasicMaterial
-      cageMat.opacity = 0.07 * (1 - disperse.current)
+      // Also fades as the camera passes through the shell. Left at full
+      // strength it stays on screen once you are inside as a handful of long
+      // straight lines cutting across the network — the one thing in the frame
+      // that reads as a diagram rather than as a place.
+      cageMat.opacity = 0.07 * (1 - disperse.current) * shellFade.current
     }
 
     // ---- Section character -------------------------------------------------
@@ -903,11 +997,69 @@ function Companion({
   )
 }
 
+/** Wraps the ball and its contents so both can be positioned from one place. */
+function Scene({
+  motionScale,
+  wrapperRef,
+  labelHost,
+  interiorRef,
+  inside,
+  showInterior,
+}: {
+  motionScale: number
+  wrapperRef: React.RefObject<HTMLDivElement | null>
+  labelHost: React.RefObject<HTMLDivElement | null>
+  interiorRef: React.RefObject<THREE.Group | null>
+  inside: React.RefObject<number>
+  showInterior: boolean
+}) {
+  return (
+    <>
+      <Companion
+        motionScale={motionScale}
+        wrapperRef={wrapperRef}
+        interiorRef={interiorRef}
+        inside={inside}
+      />
+      {/* Mounted only near the core section. Leaving it in the scene graph and
+          fading it with an alpha uniform is not free — additive geometry at
+          zero alpha is still rasterised every frame, and the tubes, charge and
+          filler together cost more than doubled the page's frame time. */}
+      {showInterior ? (
+        <group ref={interiorRef}>
+          <Interior inside={inside} labelHost={labelHost} />
+        </group>
+      ) : null}
+    </>
+  )
+}
+
 // ---------------------------------------------------------------------------
+
+/** The named services, resolved once so the DOM label layer and the scene
+ *  iterate the same list in the same order. */
+const LABELS = interiorNodes()
 
 export function ScrollCompanion() {
   const tier = useGLTier()
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const labelHost = useRef<HTMLDivElement>(null)
+  const interiorRef = useRef<THREE.Group>(null)
+  const inside = useRef(0)
+  /** Mount the bloom pass a little before the flight, so its shader compile
+   *  does not land mid-scroll. */
+  const [coreNear, setCoreNear] = useState(false)
+
+  useEffect(() => {
+    const el = document.getElementById("core")
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => setCoreNear(e.isIntersecting), {
+      rootMargin: "35% 0px 35% 0px",
+      threshold: 0,
+    })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
   const [awake, setAwake] = useState(true)
   const [overHero, setOverHero] = useState(true)
 
@@ -946,15 +1098,18 @@ export function ScrollCompanion() {
     <div
       ref={wrapperRef}
       data-companion=""
-      className="pointer-events-none fixed top-0 left-0 z-0 will-change-transform"
-      style={{ width: BOX, height: BOX, opacity: 0 }}
+      className="pointer-events-none fixed inset-0 z-0"
+      style={{ opacity: 0 }}
       aria-hidden
     >
       <Canvas
         frameloop={awake && !overHero ? "always" : "never"}
         dpr={[1, Math.min(tier.dpr[1], 1.25)]}
-        orthographic
-        camera={{ position: [0, 0, 500], zoom: 1, near: 0.1, far: 2000 }}
+        // Perspective, not orthographic. The ball is placed by moving it in
+        // world space rather than by translating a small box around the page,
+        // which is the only way the camera can be flown *into* it — and
+        // therefore the only way there can be one ball rather than two.
+        camera={{ fov: FOV, near: 0.1, far: 600, position: [0, 0, CAM_FAR] }}
         gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
         // r3f sets `pointer-events: auto` on its wrapper whenever no
         // `eventSource` is given. This companion reads the pointer from its own
@@ -962,8 +1117,35 @@ export function ScrollCompanion() {
         // is spread after r3f's default, so this wins.
         style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
       >
-        <Companion motionScale={tier.motionScale} wrapperRef={wrapperRef} />
+        <Scene
+          motionScale={tier.motionScale}
+          wrapperRef={wrapperRef}
+          labelHost={labelHost}
+          interiorRef={interiorRef}
+          inside={inside}
+          showInterior={coreNear}
+        />
+        {/* No post-processing on this canvas, deliberately. A bloom pass is a
+            full-screen effect — it cannot be scoped to the interior, so it lit
+            up the ball itself as well, and because the pass has to be mounted
+            ahead of time to keep its shader compile out of the flight, that
+            brightening landed a whole section early. The interior carries its
+            own glow in its shaders instead. */}
       </Canvas>
+
+      {/* Node labels are real DOM text — selectable, legible at any pixel
+          ratio, and not baked into a texture. Hidden from assistive tech
+          because the same names appear in the section's own copy. */}
+      <div ref={labelHost} className="pointer-events-none absolute inset-0" aria-hidden>
+        {LABELS.map((node) => (
+          <div
+            key={node.id}
+            className="label text-paper absolute top-0 left-0 -translate-y-1/2 pl-4 text-[0.62rem] whitespace-nowrap opacity-0 will-change-transform"
+          >
+            {node.label}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
