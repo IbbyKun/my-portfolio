@@ -9,6 +9,9 @@ import { Preloader } from "@/components/chrome/preloader"
 import { Grain } from "@/components/chrome/grain"
 import { CompanionMount } from "@/components/three/companion-mount"
 import { profile } from "@/data/profile"
+import { experiences } from "@/data/experience"
+import { siteUrl } from "@/lib/site-url"
+import { personSchema } from "@/lib/person-schema"
 
 import "./globals.css"
 
@@ -59,40 +62,68 @@ const jetbrainsMono = localFont({
   fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
 })
 
-const description =
-  "Software engineer and team lead building multi-tenant platforms where the failure modes are expensive — escrow payments, clinical AI, multi-currency marketplaces."
+const currentRole = experiences.find((role) => role.current)
+
+/** One sentence, identity-first. Search engines truncate around 155 chars. */
+const description = currentRole
+  ? `${profile.name} — ${profile.title}, ${currentRole.title} at ${currentRole.company}. Multi-tenant platforms, applied AI and payments systems. ${profile.location}.`
+  : `${profile.name} — ${profile.title}. ${profile.location}.`
+
+const pageTitle = `${profile.name} — ${profile.title}`
 
 export const metadata: Metadata = {
+  // Everything relative below (canonical, og:image, twitter:image) resolves
+  // against this, which is why it has to be set before any of them are useful.
+  metadataBase: new URL(siteUrl),
   title: {
-    default: `${profile.name} — ${profile.title}`,
+    default: pageTitle,
     template: `%s — ${profile.name}`,
   },
   description,
+  applicationName: profile.name,
+  // One page, one canonical. Without this, a link with a tracking parameter or
+  // the *.vercel.app preview domain can be indexed as a separate document.
+  alternates: { canonical: "/" },
   keywords: [
+    profile.name,
+    profile.title,
+    ...(currentRole ? [currentRole.title, currentRole.company] : []),
     "Staff Engineer",
     "Software Engineer",
-    "Full-Stack Engineer",
-    "Applied AI",
-    "Multi-tenant SaaS",
-    "Next.js",
-    "TypeScript",
-    profile.name,
+    "Lahore",
+    "Pakistan",
   ],
-  authors: [{ name: profile.name, url: profile.githubUrl }],
+  authors: [{ name: profile.name, url: siteUrl }],
   creator: profile.name,
+  publisher: profile.name,
   openGraph: {
     type: "profile",
-    title: `${profile.name} — ${profile.title}`,
+    firstName: profile.name.split(" ")[0],
+    lastName: profile.name.split(" ").slice(1).join(" "),
+    username: profile.githubDisplay,
+    title: pageTitle,
     description,
-    siteName: profile.name,
+    url: "/",
+    siteName: pageTitle,
     locale: "en_GB",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${profile.name} — ${profile.title}`,
+    title: pageTitle,
     description,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  category: "technology",
 }
 
 export const viewport: Viewport = {
@@ -119,6 +150,14 @@ export default function RootLayout({
         >
           Skip to work
         </a>
+
+        {/* Identity graph. Rendered from the same data the page renders from,
+            so the two can never disagree. */}
+        <script
+          type="application/ld+json"
+          // The payload is built from local constants, never user input.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema()) }}
+        />
 
         <Preloader />
         <Cursor />
